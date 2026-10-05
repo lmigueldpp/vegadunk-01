@@ -6,7 +6,7 @@ one ADR in `DECISIONS.md`. Build only what the current milestone needs.
 ## M0: Skeleton (learn: project layout, tooling, deploy pipeline)
 - [x] `npx create-next-app` (TypeScript, App Router, Tailwind, ESLint)
 - [x] Prettier plus Husky/lint-staged pre-commit hook
-- [ ] Prisma plus Postgres (local via Docker; managed DB for prod)
+- [x] Prisma plus Postgres (local via Docker; managed DB for prod)
 - [ ] Auth.js email magic link; `User` model
 - [ ] `/api/health`, pino logging, Sentry; `.env.example`
 - [ ] Deploy to Vercel with a Neon database (ADR already written)

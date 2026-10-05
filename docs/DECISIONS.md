@@ -60,3 +60,48 @@ gets the exact same versions.
 Using a private package later would need a scoped registry line in this file.
 Nothing here changes with more users; the benefit grows with the number of
 machines and people that install the project.
+
+## 2026-10-05: Prisma 7 with a local Postgres in Docker
+
+**Context.** The app needs a database layer before Auth.js can store users.
+Production will be Neon (see the first ADR). Development needs a Postgres that
+matches production, works offline and can be thrown away. Prisma 7 changed its
+defaults: the client is generated into the project as TypeScript, it talks to
+Postgres through a driver adapter (`@prisma/adapter-pg`), and the CLI reads its
+settings from `prisma.config.ts` and no longer loads `.env` files by itself.
+
+**Decision.** Prisma 7.10.0 (CLI, client and pg adapter pinned exactly) with
+Postgres 18 in Docker Compose for local work. One env file, `.env.local`:
+Next.js reads it natively and `prisma.config.ts` loads it with `@next/env`, the
+same loader Next uses. The generated client lives in `src/generated/prisma`
+(git-ignored, rebuilt by `postinstall`). One shared client in
+`src/server/db.ts`, cached on `globalThis` in development so hot reload does
+not open a new connection pool on every save. No tables yet: the first model
+and migration arrive with `User` in the Auth.js task.
+
+**Alternatives.**
+- Drizzle: lighter, no code generation, closer to SQL. Lost because the stack
+  ADR already chose Prisma, and its schema file plus `migrate dev` is a gentler
+  way to learn migrations.
+- Postgres.app or Homebrew: no Docker, but the version belongs to the machine,
+  not the project, and a reset is manual. Compose pins the version in the repo
+  and `docker compose down -v` gives a clean slate.
+- A Neon branch for development: same engine as production and nothing to run,
+  but every query needs the internet, adds latency and uses free-tier quota.
+- `prisma dev` (Prisma's built-in local Postgres, suggested by `prisma init`):
+  no Docker, but ties local work to Prisma tooling instead of plain Postgres.
+- `.env` for Prisma plus `.env.local` for Next: the default setup, but two files
+  holding the same secret drift apart.
+
+**Consequences.** Anyone with Docker gets the same database with
+`npm run db:up`. The CLI and the app read the same file, so a wrong URL fails
+the same way in both. `npm install` must run before lint or build because the
+client is generated. Postgres listens only on 127.0.0.1 with a throwaway
+password. npm's `latest` tag for `prisma` already points at an 8.0 release
+candidate, so versions stay pinned and Prisma 8 gets its own ADR. The deploy
+task should create the Neon project on Postgres 18 (or move the local image to
+Neon's version). On Neon, migrations need the direct URL while the app uses the
+pooled one; Prisma 7 dropped `directUrl`, so the deploy task points
+`prisma.config.ts` at the unpooled URL. At 100x users the first pressure is
+connections, not data: every serverless instance opens its own pool, which is
+why production goes through Neon's pooler.

@@ -43,3 +43,6 @@ next-env.d.ts
 
 # source spreadsheets
 data/source/
+
+# prisma client
+/src/generated/prisma

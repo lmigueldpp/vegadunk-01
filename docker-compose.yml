@@ -1,0 +1,21 @@
+name: vegadunk
+
+services:
+  db:
+    image: postgres:18-alpine
+    environment:
+      POSTGRES_USER: vegadunk
+      POSTGRES_PASSWORD: vegadunk
+      POSTGRES_DB: vegadunk
+    ports:
+      - "127.0.0.1:5432:5432"
+    volumes:
+      - db-data:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U vegadunk -d vegadunk"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  db-data:
