@@ -4,7 +4,7 @@ Milestones are small on purpose. Each one ends with a working app and at least
 one ADR in `DECISIONS.md`. Build only what the current milestone needs.
 
 ## M0: Skeleton (learn: project layout, tooling, deploy pipeline)
-- [ ] `npx create-next-app` (TypeScript, App Router, Tailwind, ESLint)
+- [x] `npx create-next-app` (TypeScript, App Router, Tailwind, ESLint)
 - [ ] Prettier plus Husky/lint-staged pre-commit hook
 - [ ] Prisma plus Postgres (local via Docker; managed DB for prod)
 - [ ] Auth.js email magic link; `User` model
