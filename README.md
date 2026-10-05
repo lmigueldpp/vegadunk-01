@@ -11,4 +11,4 @@ npm install
 npm run dev
 ```
 
-Open http://localhost:3000. Other scripts: `npm run lint`, `npm run build`.
+Open http://localhost:3000. Other scripts: `npm run lint`, `npm run build`, `npm run format`, `npm run format:check`. A pre-commit hook (Husky plus lint-staged) lints and formats staged files.

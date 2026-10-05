@@ -35,3 +35,28 @@ Prisma as ORM; Postgres hosted on Neon; Auth.js for login; Vercel for deploy.
 gives a DB copy per PR, matching the branch-per-change workflow. Cold starts of
 a few hundred ms are acceptable. At 100x users the single-region DB and the
 lack of a cache layer would be the first things to change.
+
+## 2026-10-05: The project pins its own npm registry
+
+**Context.** npm reads its settings from the machine (`~/.npmrc`) unless the
+project overrides them. Luis's machine points npm at a private work registry.
+Scaffolding the app there failed on an expired token, and a successful install
+would have written that private host into `package-lock.json`, which Vercel
+and any other machine cannot reach.
+
+**Decision.** A committed `.npmrc` at the repo root sets
+`registry=https://registry.npmjs.org/`. The project, not the machine, decides
+where packages come from. `package-lock.json` is committed so every install
+gets the exact same versions.
+
+**Alternatives.**
+- Fix the machine's global config: works for one laptop, but leaves the build
+  dependent on whoever runs it. The next machine or CI runner repeats the
+  problem.
+- Pass `--registry` on every command: easy to forget, and Vercel would not know
+  about it.
+
+**Consequences.** Installs behave the same on the laptop, Vercel and future CI.
+Using a private package later would need a scoped registry line in this file.
+Nothing here changes with more users; the benefit grows with the number of
+machines and people that install the project.
